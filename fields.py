@@ -65,7 +65,7 @@ class Email(Field):
     @value.setter
     def value(self, new_email: str):
         result = re.findall(r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)', new_email)
-        if not new_email in result:
+        if new_email not in result:
             raise ValueError
         self.__value = new_email   
 
