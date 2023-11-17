@@ -56,7 +56,6 @@ def add_phone(contact_name: str, *args, **kwargs) -> str:
         new_phone = args[0]
     else:
         new_phone = input(f'{BLUE}Please enter the phone number ({GREEN}10 digits{BLUE}): {RESET}')
-    # if contact exist - we add phone to the list, not replace
     if contact_name in address_book.data.keys():
         record = address_book.data[contact_name]
         record.add_phone(new_phone)
@@ -64,7 +63,6 @@ def add_phone(contact_name: str, *args, **kwargs) -> str:
         record = Record(contact_name)
         record.add_phone(new_phone)
         address_book.add_record(record)
-    #this should be corrected when there are other fields added
     if len(args) >=2 :
         birthday = args[1]
         record.add_birthday(birthday)
@@ -81,7 +79,6 @@ def add_birthday(contact_name: str, *args, **kwargs) -> str:
         record = address_book.data[contact_name]
         record.add_birthday(birthday)
     else:
-        # entered date instead of contact name
         if datetime.strptime(contact_name, '%Y-%m-%d'):
             raise ValueError
         record = Record(contact_name)
@@ -101,7 +98,7 @@ def change_phone(*args):
         old_phone, new_phone = args[1:2]
     else:
         old_phone = input(f'{BLUE}Please enter old number: {RESET}')
-        if not old_phone in record.phones:
+        if old_phone not in record.phones:
             raise KeyError
         new_phone = input(f'{BLUE}Please enter new number ({GREEN}10 digits{BLUE}): {RESET}')
     record.edit_phone(old_phone, new_phone)
@@ -140,18 +137,14 @@ def unknown_command(*args):
 @input_error
 def delete_phone(*args):
     contact_name = args[0]
-    # name not in book
     if contact_name not in list(address_book.data.keys()):
         raise KeyError
-    # check if phone provided
     if args[1:]:
-        # phone provided, so removing phone only
         phones = args[1:]
         record = address_book.data[contact_name]
         for phone in phones:
             record.remove_phone(phone)
     else:
-        # no phone, remove whole record
         res = input(f"{RED}Are you sure you want to delete contact {contact_name}?{GREEN}[y]{RESET}es/{GREEN}[n]{RESET}o: ")
         if res != "yes" and res != "y":
             return f"{RED}Contact wasn't delete!{RESET}"
@@ -161,7 +154,6 @@ def delete_phone(*args):
 @input_error
 def delete_birthday(*args):
     contact_name = args[0]
-    # name not in book
     if contact_name not in list(address_book.data.keys()):
         raise KeyError
     record = address_book.data[contact_name]
@@ -169,18 +161,6 @@ def delete_birthday(*args):
     return f'{GREEN}Removed.{RESET}'
 
 def restore_data_from_file(*args, file_name=FILENAME) -> str:
-    ''' restore AddressBook object from the file '''
-    # TODO: format selection
-    # check if filename provided as non-default argument, else -> request, if empty -> set default
-    # if file_name == FILENAME:
-    #     entered_file_name = input(f"From what file info should be fetched (default is '{FILENAME}')? ").lower()
-    #     if entered_file_name == '':
-    #         file_name = FILENAME
-    # try:
-    #     with open(file_name, 'rb') as fh: 
-    #         address_book.data = pickle.load(fh)
-    # except FileNotFoundError:
-    #     print(BLUE + "File not found, using new file." + RESET)
     address_book.load(file_name)
     return file_name
 
@@ -300,24 +280,18 @@ def delete_adress(*args):
 @input_error
 def random_search(*args) -> GeneratorType:
     search = args[0]
-    # do not search if less than 3 symbols entered
-    # if first parameter too short and several parameters entered - join all parameters
     if len(search) < 3:
         if len(' '.join(args)) > 2:
             search = ' '.join(args)
         else:
             raise IndexError
-    # if search strin is a name:
-    # TODO: normalize small/big letters
     search_result = AddressBook()
     if search.isnumeric():
-        #searching for phone
         for record in address_book.values():
             for phone in record.phones:
                 if search in str(phone.value):
                     search_result.add_record(record)
     else:
-        #searching for name
         for name, record in address_book.data.items():
             if search in name:
                 search_result.add_record(record)
@@ -327,7 +301,6 @@ def random_search(*args) -> GeneratorType:
 
 @input_error
 def birthday_in_XX_days(*args):
-    ''' знайти всі контакти, у яких день народження за XX днів'''
     return address_book.bd_in_xx_days(int(args[0]))
 
 @input_error
@@ -478,7 +451,6 @@ ALL_COMMANDS = OPERATIONS.keys()
 command_completer = WordCompleter(ALL_COMMANDS)
 
 def parse(input_text: str):
-    # itereate over keywords dict, not over input words !!!
     for kw, func in OPERATIONS.items():
         if input_text.startswith(kw):
             params = input_text[len(kw):].strip()
@@ -487,10 +459,6 @@ def parse(input_text: str):
 
 
 def main():
-    ''' main cycle'''
-    # file_name = restore_data_from_file()
-    # entered_file_name = input(f"From what file info should be fetched (default is '{FILENAME}')? ").lower()
-    #file_name = FILENAME if entered_file_name == '' else entered_file_name
     file_name = FILENAME
     address_book.load(file_name)
     load_notes()
@@ -498,20 +466,15 @@ def main():
     while True:
         input_ = prompt(">>> ", completer=command_completer)
         input_ = input_.lower()
-        # check if user want to stop, strip() - just in case :)
         if input_.strip() in STOP_WORDS:
             # TODO: format dependent
             save_data_to_file(file_name)
             save_notes()
             print(f"{GREEN}See you, bye!{RESET}")
             break
-        # check for empty input, do nothing
         if input_.strip() == '':
             continue
-        # simple split() does not allow to use spaces in OPERATIONS dict
         command, parameters = parse(input_)
-        # all -> generator
-        # other commands -> str
         command_to_run = command(*parameters)
         if isinstance(command_to_run, GeneratorType):
             for _selection in command_to_run:
@@ -526,5 +489,4 @@ def main():
             print(f'{RESET}{command_to_run}')
 
 if __name__ == "__main__":
-    # locale.setlocale(locale.LC_ALL, 'uk_UA.UTF-8')
     main()
