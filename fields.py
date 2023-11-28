@@ -39,7 +39,7 @@ class Birthday(Field):
     @value.setter
     def value(self, new_date: str) -> str:
         today = datetime.now().date()
-        date_to_check = datetime.strptime(new_date, '%Y-%m-%d').date()
+        date_to_check = datetime.strptime(new_date, '%d.%m.%Y').date()
         if today < date_to_check:
             raise ValueError
         self.__value = date_to_check
@@ -48,7 +48,7 @@ class Birthday(Field):
     def __str__(self):
         return datetime.strftime(self.__value, '%d %B')
     
-class Adress(Field):
+class Address(Field):
     @property
     def value(self) -> str:
         return self.__value

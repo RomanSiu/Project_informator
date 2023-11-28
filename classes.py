@@ -3,7 +3,7 @@ from datetime import datetime
 from types import GeneratorType
 from itertools import islice
 import pickle
-from fields import Name, Phone, Birthday, Adress, Email
+from fields import Name, Phone, Birthday, Address, Email
 
 
 RED = "\033[91m"
@@ -13,13 +13,13 @@ RESET = "\033[0m"
 FILENAME = "book.dat"
 
 class Record:
-    def __init__(self, name: str, birthday=None, email=None, adress=None) -> None:
+    def __init__(self, name: str, birthday=None, email=None, address=None) -> None:
         self.name = Name(name)
         self.phones = []
         if birthday:
             self.birthday = Birthday(birthday)
-        if adress:
-            self.adress = Adress(adress)
+        if address:
+            self.address = Address(address)
         self.emails = []
 
     def __str__(self) -> str:
@@ -33,8 +33,8 @@ class Record:
                 __last_part += f"{BLUE}Emails: {RESET}{', '.join(e.value for e in self.emails)}\n"
             elif len(self.emails) == 1:
                 __last_part += f"{BLUE}Email: {RESET}{self.emails[0]}\n"
-        if hasattr(self, "adress") and self.adress != "":
-            __last_part += f"{BLUE}Adress: {RESET}{self.adress}"
+        if hasattr(self, "address") and self.address != "":
+            __last_part += f"{BLUE}Address: {RESET}{self.address}"
 
         message = (
                 f"{BLUE}Name: {RESET}{self.name.value}\n"
@@ -69,11 +69,11 @@ class Record:
     def add_birthday(self, birthday: str) -> None:
         self.birthday = Birthday(birthday)
 
-    def add_adress(self, adress: str) -> None:
-        self.adress = adress
+    def add_address(self, adress: str) -> None:
+        self.address = adress
 
-    def delete_adress(self):
-        self.adress = ""
+    def delete_address(self):
+        self.address = ""
 
     def add_email(self, email: str) -> None:
         if email not in (e.value for e in self.emails):
